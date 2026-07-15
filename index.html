@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>정부 안내서비스 찾기</title>
+  <style>
+    :root {
+      --primary: #1456a0;
+      --primary-dark: #0b3d78;
+      --line: #d9e2ec;
+      --text: #172b4d;
+      --muted: #52667a;
+      --surface: #ffffff;
+      --background: #f3f6f9;
+      --success: #087f5b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--background);
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      line-height: 1.5;
+    }
+
+    .hero {
+      padding: 44px 20px 70px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    }
+
+    .hero-inner, main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    .eyebrow { margin: 0 0 8px; font-size: 14px; font-weight: 700; opacity: .85; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.04em; }
+    .hero p:last-child { margin: 10px 0 0; font-size: 17px; opacity: .9; }
+
+    main { margin-top: -38px; padding-bottom: 48px; }
+    .panel {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 10px 30px rgba(18, 45, 75, .08);
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(260px, 2fr) minmax(180px, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+      padding: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 14px; font-weight: 700; }
+    input, select, button {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #aebdca;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    input, select { padding: 0 14px; }
+    input:focus, select:focus { outline: 3px solid rgba(20, 86, 160, .18); border-color: var(--primary); }
+    button { width: auto; padding: 0 22px; cursor: pointer; font-weight: 700; }
+    button:hover { background: #edf3f9; }
+
+    .summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 24px;
+    }
+
+    .count { margin: 0; font-size: 16px; font-weight: 700; }
+    .count strong { color: var(--primary); font-size: 22px; }
+    .hint { margin: 0; color: var(--muted); font-size: 14px; }
+    .table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 15px 18px; border-bottom: 1px solid var(--line); text-align: left; }
+    th { color: #344b62; background: #f7f9fb; font-size: 14px; white-space: nowrap; }
+    tbody tr:hover { background: #f8fbff; }
+    td:first-child { font-weight: 700; }
+    td:last-child { white-space: nowrap; }
+
+    .badge {
+      display: inline-block;
+      min-width: 52px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #eaf2fb;
+      color: var(--primary-dark);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .available { color: var(--success); font-weight: 700; }
+    .unavailable { color: #b42318; font-weight: 700; }
+    .empty { display: none; padding: 52px 20px; text-align: center; color: var(--muted); }
+    .empty strong { display: block; margin-bottom: 5px; color: var(--text); font-size: 18px; }
+
+    @media (max-width: 720px) {
+      .hero { padding-top: 32px; }
+      .filters { grid-template-columns: 1fr; padding: 20px; }
+      button { width: 100%; }
+      .summary { align-items: flex-start; flex-direction: column; padding: 16px 20px; }
+      .hint { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">대한민국 정부 안내서비스</p>
+      <h1>필요한 안내를 빠르게 찾아보세요</h1>
+      <p>서비스명으로 검색하거나 안내분야를 선택하면 관련 서비스를 바로 확인할 수 있습니다.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="service-list-title">
+      <h2 id="service-list-title" hidden>정부 안내서비스 목록</h2>
+      <div class="filters">
+        <div>
+          <label for="keyword">서비스명 검색</label>
+          <input id="keyword" type="search" placeholder="예: 연금, 취업, 교육" autocomplete="off">
+        </div>
+        <div>
+          <label for="category">안내분야</label>
+          <select id="category">
+            <option value="">전체 분야</option>
+          </select>
+        </div>
+        <button id="resetButton" type="button">검색 초기화</button>
+      </div>
+
+      <div class="summary" aria-live="polite">
+        <p class="count">현재 <strong id="visibleCount">24</strong>건 표시</p>
+        <p class="hint">온라인 안내 가능 여부와 콜센터 번호를 함께 확인하세요.</p>
+      </div>
+
+      <div id="tableWrap" class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">서비스명</th>
+              <th scope="col">안내분야</th>
+              <th scope="col">소관기관</th>
+              <th scope="col">온라인 안내</th>
+              <th scope="col">콜센터</th>
+            </tr>
+          </thead>
+          <tbody id="serviceRows"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty">
+        <strong>검색 결과가 없습니다.</strong>
+        검색어나 안내분야를 다시 확인해 주세요.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const services = [
+      {"서비스ID":"A001","서비스명":"주민등록 발급 안내","안내분야":"민원","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1374"},
+      {"서비스ID":"A002","서비스명":"전입신고 안내","안내분야":"민원","소관기관":"보건복지부","온라인안내":"가능","콜센터":"1352"},
+      {"서비스ID":"A003","서비스명":"인감증명 안내","안내분야":"민원","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1313"},
+      {"서비스ID":"A004","서비스명":"민원접수 안내","안내분야":"민원","소관기관":"교육부","온라인안내":"가능","콜센터":"1341"},
+      {"서비스ID":"A005","서비스명":"정부24 이용 안내","안내분야":"민원","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1356"},
+      {"서비스ID":"A006","서비스명":"기초연금 안내","안내분야":"복지","소관기관":"행정안전부","온라인안내":"불가","콜센터":"1386"},
+      {"서비스ID":"A007","서비스명":"복지급여 안내","안내분야":"복지","소관기관":"고용노동부","온라인안내":"가능","콜센터":"1319"},
+      {"서비스ID":"A008","서비스명":"장애인지원 안내","안내분야":"복지","소관기관":"보건복지부","온라인안내":"가능","콜센터":"1337"},
+      {"서비스ID":"A009","서비스명":"아동수당 안내","안내분야":"복지","소관기관":"지자체","온라인안내":"가능","콜센터":"1326"},
+      {"서비스ID":"A010","서비스명":"지방세 납부 안내","안내분야":"세금","소관기관":"보건복지부","온라인안내":"가능","콜센터":"1357"},
+      {"서비스ID":"A011","서비스명":"취득세 안내","안내분야":"세금","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1341"},
+      {"서비스ID":"A012","서비스명":"재산세 안내","안내분야":"세금","소관기관":"지자체","온라인안내":"가능","콜센터":"1317"},
+      {"서비스ID":"A013","서비스명":"자동차등록 안내","안내분야":"교통","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1399"},
+      {"서비스ID":"A014","서비스명":"운전면허 안내","안내분야":"교통","소관기관":"보건복지부","온라인안내":"불가","콜센터":"1357"},
+      {"서비스ID":"A015","서비스명":"주정차단속 안내","안내분야":"교통","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1367"},
+      {"서비스ID":"A016","서비스명":"재난지원금 안내","안내분야":"재난","소관기관":"행정안전부","온라인안내":"불가","콜센터":"1356"},
+      {"서비스ID":"A017","서비스명":"대피소 안내","안내분야":"재난","소관기관":"국세청","온라인안내":"가능","콜센터":"1359"},
+      {"서비스ID":"A018","서비스명":"안전신고 안내","안내분야":"재난","소관기관":"국세청","온라인안내":"가능","콜센터":"1357"},
+      {"서비스ID":"A019","서비스명":"국민취업지원 안내","안내분야":"일자리","소관기관":"지자체","온라인안내":"가능","콜센터":"1386"},
+      {"서비스ID":"A020","서비스명":"구직급여 안내","안내분야":"일자리","소관기관":"국토교통부","온라인안내":"불가","콜센터":"1350"},
+      {"서비스ID":"A021","서비스명":"청년일자리 안내","안내분야":"일자리","소관기관":"지자체","온라인안내":"가능","콜센터":"1392"},
+      {"서비스ID":"A022","서비스명":"평생교육 안내","안내분야":"교육","소관기관":"국토교통부","온라인안내":"가능","콜센터":"1379"},
+      {"서비스ID":"A023","서비스명":"학자금 안내","안내분야":"교육","소관기관":"지자체","온라인안내":"가능","콜센터":"1324"},
+      {"서비스ID":"A024","서비스명":"교육비지원 안내","안내분야":"교육","소관기관":"행정안전부","온라인안내":"가능","콜센터":"1368"}
+    ];
+
+    const keywordInput = document.getElementById("keyword");
+    const categorySelect = document.getElementById("category");
+    const resetButton = document.getElementById("resetButton");
+    const rows = document.getElementById("serviceRows");
+    const visibleCount = document.getElementById("visibleCount");
+    const tableWrap = document.getElementById("tableWrap");
+    const emptyState = document.getElementById("emptyState");
+
+    [...new Set(services.map(service => service.안내분야))].forEach(category => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      categorySelect.appendChild(option);
+    });
+
+    function renderServices() {
+      const keyword = keywordInput.value.trim().toLocaleLowerCase("ko-KR");
+      const category = categorySelect.value;
+      const filtered = services.filter(service =>
+        service.서비스명.toLocaleLowerCase("ko-KR").includes(keyword) &&
+        (!category || service.안내분야 === category)
+      );
+
+      rows.replaceChildren(...filtered.map(service => {
+        const row = document.createElement("tr");
+        const values = [service.서비스명, service.안내분야, service.소관기관, service.온라인안내, service.콜센터];
+        values.forEach((value, index) => {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          if (index === 1) cell.className = "badge-cell";
+          if (index === 1) {
+            const badge = document.createElement("span");
+            badge.className = "badge";
+            badge.textContent = value;
+            cell.replaceChildren(badge);
+          }
+          if (index === 3) cell.className = value === "가능" ? "available" : "unavailable";
+          row.appendChild(cell);
+        });
+        return row;
+      }));
+
+      visibleCount.textContent = filtered.length;
+      tableWrap.hidden = filtered.length === 0;
+      emptyState.style.display = filtered.length === 0 ? "block" : "none";
+    }
+
+    keywordInput.addEventListener("input", renderServices);
+    categorySelect.addEventListener("change", renderServices);
+    resetButton.addEventListener("click", () => {
+      keywordInput.value = "";
+      categorySelect.value = "";
+      renderServices();
+      keywordInput.focus();
+    });
+
+    renderServices();
+  </script>
+</body>
+</html>
